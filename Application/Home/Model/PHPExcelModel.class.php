@@ -102,7 +102,7 @@ class PHPExcelModel extends \Think\Model{
         }
         try {
 
-            $filePathName = $path.$this->fileName.time().'.xlsx';
+            $filePathName = $this->path.$this->fileName.time().'.xlsx';
             $this->objWriter->save($filePathName);
         } catch (\PHPExcel_Reader_Exception $e) {
             error('SERVER_BUSY',$e);
