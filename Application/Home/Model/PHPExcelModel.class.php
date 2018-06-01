@@ -12,7 +12,7 @@ import("Vendor.PHPExcel.PHPExcel.Reader.Excel2007");
 import("Vendor.PHPExcel.PHPExcel.IOFactory");
 //require_once '../Classes/PHPExcel/IOFactory.php';
 //require_once '../Classes/PHPExcel/IOFactory.php';
-class PHPExcelModel extends \Think\Model{
+class PHPExcelModel extends Model{
     Protected $autoCheckFields = false;
     private $objPHPExcel;
     private $objWriter;

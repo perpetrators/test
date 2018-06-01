@@ -23,12 +23,17 @@ class TestController extends Controller
                 'H', 'I', 'J', 'K', 'L', 'M',
                 'N', 'O', 'P', 'Q', 'R', 'S',),
             'fileName'=>"测试".time(),
-            'path'=>"./public/excel/",
+            'path'=>"",
         ));
         $arr = array(
+            array("format"=>'int',"width"=>30,"liteName"=>"ID"),
+            array("format"=>'text',"width"=>30,"liteName"=>"number"),
+            array("format"=>'text',"width"=>30,"liteName"=>"name"),
+            array("format"=>'text',"width"=>30,"liteName"=>"order"),
 
         );
         $excel->setActiveSheet($arr,"测试标题");
+        $excel->foundExcelFile();
     }
 }
 
