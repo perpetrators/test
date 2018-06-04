@@ -7,6 +7,8 @@
  */
 namespace Home\Model;
 use PHPExcel_IOFactory;
+use Think\Model;
+
 import("Vendor.PHPExcel.PHPExcel");
 import("Vendor.PHPExcel.PHPExcel.Reader.Excel2007");
 import("Vendor.PHPExcel.PHPExcel.IOFactory");
@@ -32,7 +34,18 @@ class PHPExcelModel extends Model{
     {
         parent::__Construct();
         $this->objPHPExcel = new \PHPExcel();
+        $this->objPHPExcel->setactivesheetindex(0);
+        $this->objPHPExcel->getActiveSheet()->setTitle('标题1');
         $this->objActSheet = $this->objPHPExcel->getActiveSheet();//单元格属性
+
+
+
+
+        $this->objPHPExcel->createSheet();
+        $this->objPHPExcel->setActiveSheetIndex(1);
+        $this->objPHPExcel->getActiveSheet()->setTitle('标题2');
+
+
         $this->objWriter = PHPExcel_IOFactory::createWriter($this->objPHPExcel, $this->writerType);
     }
     public function setConf($conf){
@@ -44,7 +57,7 @@ class PHPExcelModel extends Model{
         );
         $this->SheetList = $conf['SheetList']?$conf['SheetList']:$arr;
         $this->fileName = $conf['fileName']? $conf['fileName']:time()."未定义文件名";
-        $conf['SheetStarRow']?$this->SheetStarRow = $conf['SheetStarRow']:'';
+//        $conf['SheetStarRow']?$this->SheetStarRow = $conf['SheetStarRow']:'';
         $conf['path']?$this->path = $conf['path']:'';
 
 
@@ -56,22 +69,31 @@ class PHPExcelModel extends Model{
      * @throws \PHPExcel_Exception
      */
     public function setActiveSheet($arr, $sheetName){
+//设置当前的sheet\
+
+
+        $this->objActSheet->getStyle()->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);    //水平方向上对齐
         //设置标题
         $this->objActSheet
             ->mergeCells(
                 "{$this->SheetList[0]}{$this->SheetStarRow}:{$this->SheetList[count($this->SheetList)-1]}{$this->SheetStarRow}"
             );//'A1:B1'
-        $this->objActSheet->setCellValue('A'.$this->SheetStarRow,$sheetName);
+
         $this->objActSheet->getStyle('A'.$this->SheetStarRow)->getFont()->setBold(true);
         $this->objActSheet->getStyle('A'.$this->SheetStarRow)->getFont()->setSize(18);
+        $this->objActSheet->setCellValue('A'.$this->SheetStarRow,$sheetName);
+        $this->objActSheet->setCellValueExplicit("A$this->SheetStarRow", $sheetName,\PHPExcel_Cell_DataType::TYPE_STRING);
         //设置列表样式
         foreach ($arr as $a=>$data){
             $this->objActSheet->getColumnDimension( $this->SheetList[$a])->setAutoSize(true);   //内容自适应
-            $this->objActSheet->getColumnDimension( $this->SheetList[$a])->setWidth($a['width']);        //30宽
+            $this->objActSheet->getColumnDimension( $this->SheetList[$a])->setWidth($data['width']);        //30宽
             $this->objActSheet->getStyle($this->SheetList[$a])->getNumberFormat()
                 ->setFormatCode($this->getSheet($a['format']));
             $this->objActSheet->setCellValue($this->SheetList[$a].$this->SheetStarRow,$arr['liteName']);
+//            $this->objActSheet->setCellValueExplicit("$letter[$i]2", $value['title'],\PHPExcel_Cell_DataType::TYPE_STRING);
+
         }
+
     }
 
     /**
@@ -92,6 +114,7 @@ class PHPExcelModel extends Model{
     /**
      * 创建文件（excel）
      * @param string $path 路径
+     * @throws \PHPExcel_Reader_Exception
      */
     public function foundExcelFile(){
         if (is_null($this->fileName)) {
@@ -100,9 +123,13 @@ class PHPExcelModel extends Model{
             //防止中文命名，下载时ie9及其他情况下的文件名称乱码
             iconv('UTF-8', 'GB2312', $this->fileName);
         }
+        $this->objPHPExcel->setActiveSheetIndex(0)->setCellValue('A'.$this->SheetStarRow,'sdadadasd');
+//        $this->objActSheet->setCellValueExplicit("A$this->SheetStarRow", 'asdadas',\PHPExcel_Cell_DataType::TYPE_STRING);
+
         try {
 
-            $filePathName = $this->path.$this->fileName.time().'.xlsx';
+            $this->objWriter = \PHPExcel_IOFactory::createWriter($this->objPHPExcel, 'Excel2007');
+            $filePathName = $this->path.$this->fileName.time().'.xls';
             $this->objWriter->save($filePathName);
         } catch (\PHPExcel_Reader_Exception $e) {
             error('SERVER_BUSY',$e);
@@ -118,21 +145,28 @@ class PHPExcelModel extends Model{
      * @param int $baseRow
      * @throws \PHPExcel_Exception
      */
-    public function excelWRDate($data, $baseRow=3){
-        try {
-            //从文件中加载PHPExcel，使用自动phpexcelreaderireader解析
-            $objPHPExcel = \PHPExcel_IOFactory::load($this->filePathName);
-        } catch (\PHPExcel_Reader_Exception $e) {
-            error('SERVER_BUSY',$e);
-        }
-        foreach($data as $r => $dataRow){
-            $row= $baseRow +$r;//$row是循环操作行的行号
-            $objPHPExcel->getActiveSheet()->insertNewRowBefore($row,1);//插入新行
-            //遍历一条数据中的每一个列
-            foreach ($dataRow as $b){
-                $objPHPExcel->getActiveSheet()->setCellValue( $this->SheetList[$r].$row,$b);//插入单元格数据
-            }
-        }
+    public function excelWRDate($data, $baseRow=2){
+        $objReader =PHPExcel_IOFactory:: createReader('Excel2007' );
+        $objPHPExcel =$objReader->load( "$this->filePathName" );
+        $this->objPHPExcel->setActiveSheetIndex(0);
+//吧数组的内容从A2开始填充
+//        $dataArray= array( array("2010" ,    "Q1",  "UnitedStates",  790),
+//            array("2010" ,    "Q2",  "UnitedStates",  730),
+//        );
+
+
+        $objPHPExcel->getActiveSheet()->fromArray($data, NULL, 'A2');
+//        foreach($data as $r => $dataRow){
+//            $row= $baseRow +$r;//$row是循环操作行的行号
+//            $sheet = $objPHPExcel->getActiveSheet();
+//            $sheet->insertNewRowBefore($row,1);
+//            //遍历一条数据中的每一个列
+//            foreach ($dataRow as $k=>$b){
+//                $sheet->setCellValue( $this->SheetList[$k].$row,$b);//插入单元格数据
+//            }
+//        }
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, $this->writerType);
+        $objWriter->save($this->filePathName);
     }
 
 }

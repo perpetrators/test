@@ -19,11 +19,9 @@ class TestController extends Controller
         $excel =new PHPExcelModel();
         $excel->setConf(array(
             'SheetList'=>array(
-                'A', 'B', 'C', 'D', 'E', 'F', 'G',
-                'H', 'I', 'J', 'K', 'L', 'M',
-                'N', 'O', 'P', 'Q', 'R', 'S',),
+                'A', 'B', 'C', 'D',),
             'fileName'=>"测试".time(),
-            'path'=>"",
+            'path'=>"./Public/excel/",
         ));
         $arr = array(
             array("format"=>'int',"width"=>30,"liteName"=>"ID"),
@@ -32,8 +30,18 @@ class TestController extends Controller
             array("format"=>'text',"width"=>30,"liteName"=>"order"),
 
         );
+        $data = array(
+            array('1','564646','asdad','54464644'),
+            array('2','564646','asdad','54464644'),
+            array('3','564646','asdad','54464644'),
+            array('4','564646','asdad','54464644'),
+            array('5','564646','asdad','54464644'),
+            array('6','564646','asdad','54464644'),
+            array('9','564646','asdad','54464644'),
+        );
         $excel->setActiveSheet($arr,"测试标题");
         $excel->foundExcelFile();
+        $excel->excelWRDate($data);
     }
 }
 
